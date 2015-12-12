@@ -22,6 +22,7 @@ public class Main extends ApplicationAdapter {
 
     private TreeBranch mRoot;
     private Vector2 mCurrentViewCord;
+    private Fish mFish;
 
 
     @Override
@@ -37,6 +38,7 @@ public class Main extends ApplicationAdapter {
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
                 true,
                 1);
+        mFish = new Fish(1f, 10f);
     }
 
     @Override
@@ -60,7 +62,12 @@ public class Main extends ApplicationAdapter {
         mShapeRenderer.setColor(Color.GREEN);
         mRoot.renderLeefs(mShapeRenderer);
         long after = TimeUtils.nanoTime();
+
+        mShapeRenderer.setColor(Color.WHITE);
+        mFish.render(mShapeRenderer);
         mShapeRenderer.end();
+
+
 
         System.out.println("Time:" + (after - before));
 
