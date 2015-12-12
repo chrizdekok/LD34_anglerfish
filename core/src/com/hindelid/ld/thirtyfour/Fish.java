@@ -35,7 +35,7 @@ public class Fish {
         aShapeRenderer.line(mPos.x - mLampOffset.x, mPos.y + mLampOffset.y, mPos.x - mLampOffset.x * 2f, mPos.y + mLampOffset.y * 2f);
         aShapeRenderer.line(mPos.x - mLampOffset.x * 3.3f, mPos.y + mLampOffset.y, mPos.x - mLampOffset.x * 2f, mPos.y + mLampOffset.y * 2f);
         aShapeRenderer.circle(mPos.x - mLampOffset.x * 3.3f, mPos.y + mLampOffset.y - 0.08f, 0.08f, 30);
-
+//        aShapeRenderer.rect(mBoundingBox.x, mBoundingBox.y, mBoundingBox.width, mBoundingBox.height);
     }
 
 

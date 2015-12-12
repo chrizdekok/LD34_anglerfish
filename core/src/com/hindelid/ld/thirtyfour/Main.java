@@ -24,6 +24,7 @@ public class Main extends ApplicationAdapter {
     private Vector2 mCurrentViewCord;
     private Fish mFish;
 
+    private float mSpeed = Constants.SPEED;
 
     @Override
     public void create () {
@@ -69,7 +70,7 @@ public class Main extends ApplicationAdapter {
         long after = TimeUtils.nanoTime();
 
 
-        System.out.println("Time:" + (after - before)); //TODO remove
+        System.out.println("Time:" + (after - before) / 1000); //TODO remove
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -85,6 +86,7 @@ public class Main extends ApplicationAdapter {
         if (mRoot.checkCollision(mFish.mBoundingBox)) {
             System.out.println("Collision");
             spawnFishAbove();
+            mSpeed *=1.1f;
         }
     }
 
@@ -93,7 +95,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void moveAndUpdateCamera() {
-        TreeBranch.sGlobal.y += Constants.SPEED;
+        TreeBranch.sGlobal.y += mSpeed;
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             mCamera.zoom *= 5f;
