@@ -7,8 +7,8 @@ import java.util.Random;
  */
 public interface Constants {
 
-    int VIEW_SIZE_X = 7;
-    int VIEW_SIZE_Y = 7;
+    int VIEW_SIZE_X = 20;
+    int VIEW_SIZE_Y = 20;
 
     float SHRINKAGE_FACTOR = 0.5f; // :)
     float SPEED = 0.002f;

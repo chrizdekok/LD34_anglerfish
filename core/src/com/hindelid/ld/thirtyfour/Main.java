@@ -34,7 +34,8 @@ public class Main extends ApplicationAdapter {
         mRoot = new TreeBranch(
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0.2f),
-                true);
+                true,
+                0);
     }
 
     @Override
@@ -67,7 +68,8 @@ public class Main extends ApplicationAdapter {
 
     private void tick() {
         moveAndUpdateCamera();
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        if (TreeBranch.sNext) {
+            TreeBranch.sNext = false;
             mRoot.split();
         }
     }
