@@ -7,11 +7,11 @@ import java.util.Random;
  */
 public interface Constants {
 
-    int VIEW_SIZE_X = 20;
-    int VIEW_SIZE_Y = 20;
+    int VIEW_SIZE_X = 4;
+    int VIEW_SIZE_Y = 4;
 
-    float SHRINKAGE_FACTOR = 0.5f; // :)
-    float SPEED = 0.002f;
+    float SHRINKAGE_FACTOR = 0.25f; // :)
+    float SPEED = 0.01f;
 
     Random sRandom = new Random();
 }

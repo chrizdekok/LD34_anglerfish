@@ -1,5 +1,7 @@
 package com.hindelid.ld.thirtyfour;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -45,12 +47,17 @@ public class TreeBranch {
             mSplitted = true;
             double leftAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
             double rightAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
+            float leftXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
+            float rightXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
             boolean leftActive = false;
+            boolean rightActive = false;
             boolean growLeft = true;
             boolean growRight = true;
             mOrder++;
             if (mTheOneActive) {
-                leftActive = Constants.sRandom.nextBoolean();
+                mOrder = 1;
+                leftActive = Constants.sRandom.nextBoolean();//Gdx.input.isKeyPressed(Input.Keys.A);
+                rightActive = !leftActive;//Gdx.input.isKeyPressed(Input.Keys.D);
             } else {
                 growLeft = Constants.sRandom.nextInt(mOrder) < 2;
                 growRight = Constants.sRandom.nextInt(mOrder) < 2;
@@ -58,16 +65,16 @@ public class TreeBranch {
             if (growLeft) {
                 mLeftBranch = new TreeBranch(mEnd,
                         new Vector2(
-                                mEnd.x - (float) Math.sin(leftAngle) * Constants.SHRINKAGE_FACTOR,
-                                mEnd.y + (float) Math.cos(leftAngle) * Constants.SHRINKAGE_FACTOR),
+                                mEnd.x - (float) Math.sin(leftAngle) * Constants.SHRINKAGE_FACTOR / mOrder,
+                                mEnd.y + (float) Math.cos(leftAngle) * Constants.SHRINKAGE_FACTOR / mOrder),
                         mActive && leftActive, mOrder);
             }
             if (growRight) {
                 mRightBranch = new TreeBranch(mEnd,
                         new Vector2(
-                                mEnd.x + (float) Math.sin(rightAngle) * Constants.SHRINKAGE_FACTOR,
-                                mEnd.y + (float) Math.cos(rightAngle) * Constants.SHRINKAGE_FACTOR),
-                        mActive && !leftActive, mOrder);
+                                mEnd.x + (float) Math.sin(rightAngle) * Constants.SHRINKAGE_FACTOR / mOrder,
+                                mEnd.y + (float) Math.cos(rightAngle) * Constants.SHRINKAGE_FACTOR / mOrder),
+                        mActive && rightActive, mOrder);
             }
             mTheOneActive = false;
         } else {

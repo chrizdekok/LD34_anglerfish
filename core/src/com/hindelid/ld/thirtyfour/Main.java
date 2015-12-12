@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
@@ -33,9 +34,9 @@ public class Main extends ApplicationAdapter {
 
         mRoot = new TreeBranch(
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
-                new Vector2(Constants.VIEW_SIZE_X / 2f, 0.2f),
+                new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
                 true,
-                0);
+                1);
     }
 
     @Override
@@ -52,14 +53,16 @@ public class Main extends ApplicationAdapter {
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-
+        long before = TimeUtils.nanoTime();
         mShapeRenderer.setColor(Color.BROWN);
         mRoot.render(mShapeRenderer);
 
         mShapeRenderer.setColor(Color.GREEN);
         mRoot.renderLeefs(mShapeRenderer);
-
+        long after = TimeUtils.nanoTime();
         mShapeRenderer.end();
+
+        System.out.println("Time:" + (after - before));
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -76,8 +79,12 @@ public class Main extends ApplicationAdapter {
 
     private void moveAndUpdateCamera() {
         TreeBranch.sGlobal.y += Constants.SPEED;
-        mCurrentViewCord.set(TreeBranch.sGlobal);
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            mCamera.zoom *= 5f;
+        }
+
+        mCurrentViewCord.set(TreeBranch.sGlobal);
         mCamera.position.set(mCurrentViewCord, 0);
         mCamera.update();
     }
