@@ -49,27 +49,27 @@ public class Main extends ApplicationAdapter {
 
     @Override
     public void render () {
+        long before = TimeUtils.nanoTime();
         tick();
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        long before = TimeUtils.nanoTime();
         mShapeRenderer.setColor(Color.BROWN);
         mRoot.render(mShapeRenderer);
 
         mShapeRenderer.setColor(Color.GREEN);
         mRoot.renderLeefs(mShapeRenderer);
-        long after = TimeUtils.nanoTime();
 
         mShapeRenderer.setColor(Color.WHITE);
         mFish.render(mShapeRenderer);
         mShapeRenderer.end();
 
+        long after = TimeUtils.nanoTime();
 
 
-        System.out.println("Time:" + (after - before));
+        System.out.println("Time:" + (after - before)); //TODO remove
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -82,6 +82,14 @@ public class Main extends ApplicationAdapter {
             TreeBranch.sNext = false;
             mRoot.split();
         }
+        if (mRoot.checkCollision(mFish.mBoundingBox)) {
+            System.out.println("Collision");
+            spawnFishAbove();
+        }
+    }
+
+    private void spawnFishAbove() {
+        mFish.setPos(Constants.sRandom.nextFloat()*10f - 5f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 10f );
     }
 
     private void moveAndUpdateCamera() {
@@ -89,6 +97,8 @@ public class Main extends ApplicationAdapter {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             mCamera.zoom *= 5f;
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.ALT_LEFT)) {
+            spawnFishAbove();
         }
 
         mCurrentViewCord.set(TreeBranch.sGlobal);
