@@ -21,6 +21,7 @@ public class Main extends ApplicationAdapter {
     private ShapeRenderer mShapeRenderer;
 
     private TreeBranch mRoot;
+    public TreeBranch mNextRoot;
     private Vector2 mCurrentViewCord;
     private Fish mFish;
 
@@ -52,7 +53,17 @@ public class Main extends ApplicationAdapter {
     public void render () {
         long before = TimeUtils.nanoTime();
         tick();
-        Gdx.gl.glClearColor(0, 0, 0, 1);
+        if (TreeBranch.sGlobal.y < 255f) {
+            Gdx.gl.glClearColor(0, 0, TreeBranch.sGlobal.y / 255f, 1);
+        } else if (TreeBranch.sGlobal.y < 512f) {
+            Gdx.gl.glClearColor(0, (TreeBranch.sGlobal.y-256f) / 255f, 0, 1);
+        } else if (TreeBranch.sGlobal.y < 768f) {
+            Gdx.gl.glClearColor((TreeBranch.sGlobal.y-512f) / 255f, 0, 0, 1);
+        } else {
+            System.out.println("You beat the game!");
+            Gdx.app.exit();
+        }
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         mShapeRenderer.setProjectionMatrix(mCamera.combined);
 
@@ -70,7 +81,7 @@ public class Main extends ApplicationAdapter {
         long after = TimeUtils.nanoTime();
 
 
-        System.out.println("Time:" + (after - before) / 1000); //TODO remove
+        System.out.println("y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();

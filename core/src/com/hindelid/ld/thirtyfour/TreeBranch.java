@@ -105,9 +105,10 @@ public class TreeBranch {
 
     public void render(ShapeRenderer aShapeRenderer) {
         if (mTheOneActive) {
-            sGlobal.x = mStart.x + (mEnd.x - mStart.x) * (sGlobal.y - mStart.y) / (mEnd.y - mStart.y);
+            sGlobal.x = mStart.x;// + (mEnd.x - mStart.x) * (sGlobal.y - mStart.y) / (mEnd.y - mStart.y);
             if (sGlobal.y > mEnd.y) {
                 sNext = true;
+//                split();
             }
         }
         if (mActive) {

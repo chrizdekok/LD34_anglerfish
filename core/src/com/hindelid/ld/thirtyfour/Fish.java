@@ -12,13 +12,13 @@ public class Fish {
 
     final static float RADIE = 0.5f;
     final static float deg = 30f;
-    Vector2 mPos;
+    Vector2 mPos = new Vector2();
     Vector2 mTailOffset = new Vector2(MathUtils.cosDeg(deg) * RADIE, MathUtils.sinDeg(deg) * RADIE);
     Vector2 mLampOffset = new Vector2(MathUtils.sinDeg(deg) * RADIE, MathUtils.cosDeg(deg) * RADIE);
     Rectangle mBoundingBox = new Rectangle(0, 0, RADIE*2, RADIE*2);
 
     public Fish(float aX, float aY) {
-        mPos = new Vector2(aX, aY);
+        setPos(aX, aY);
     }
 
     public void setPos(float aX, float aY) {
