@@ -26,6 +26,7 @@ public class TreeBranch {
 
     private TreeBranch mLeftBranch = null;
     private TreeBranch mRightBranch = null;
+    private TreeBranch mMiddleBranch = null;
 
     private boolean mActive;
     private boolean mTheOneActive;
@@ -47,6 +48,7 @@ public class TreeBranch {
             mSplitted = true;
             double leftAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
             double rightAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
+            double middleAngle = (Constants.sRandom.nextDouble() - 0.5d) * Math.PI / 4d;
             float leftXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
             float rightXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
             boolean leftActive = false;
@@ -56,11 +58,21 @@ public class TreeBranch {
             mOrder++;
             if (mTheOneActive) {
                 mOrder = 1;
-                leftActive = Constants.sRandom.nextBoolean();//Gdx.input.isKeyPressed(Input.Keys.A);
-                rightActive = !leftActive;//Gdx.input.isKeyPressed(Input.Keys.D);
+                leftActive = Gdx.input.isKeyPressed(Input.Keys.A);
+//                leftActive = Constants.sRandom.nextBoolean();
+                if (!leftActive) {
+                    rightActive = Gdx.input.isKeyPressed(Input.Keys.D);
+                }
             } else {
                 growLeft = Constants.sRandom.nextInt(mOrder) < 2;
                 growRight = Constants.sRandom.nextInt(mOrder) < 2;
+            }
+            if(mTheOneActive && !leftActive && !rightActive) {
+                mMiddleBranch = new TreeBranch(mEnd,
+                        new Vector2(
+                                mEnd.x - (float) Math.sin(middleAngle) * Constants.SHRINKAGE_FACTOR / mOrder,
+                                mEnd.y + (float) Math.cos(middleAngle) * Constants.SHRINKAGE_FACTOR / mOrder),
+                        mTheOneActive, mOrder);
             }
             if (growLeft) {
                 mLeftBranch = new TreeBranch(mEnd,
@@ -84,6 +96,9 @@ public class TreeBranch {
             if (null != mRightBranch) {
                 mRightBranch.split();
             }
+            if (null != mMiddleBranch) {
+                mMiddleBranch.split();
+            }
         }
     }
 
@@ -96,7 +111,7 @@ public class TreeBranch {
         }
         if (mActive) {
 
-            aShapeRenderer.setColor(Color.RED);
+//            aShapeRenderer.setColor(Color.RED);
             if (mTheOneActive && sGlobal.y < mEnd.y) {
                 aShapeRenderer.line(
                         mStart.x,
@@ -120,7 +135,9 @@ public class TreeBranch {
         if (null != mRightBranch) {
             mRightBranch.render(aShapeRenderer);
         }
-
+        if (null != mMiddleBranch) {
+            mMiddleBranch.render(aShapeRenderer);
+        }
     }
 
     public void renderLeefs(ShapeRenderer aShapeRenderer) {
@@ -130,6 +147,9 @@ public class TreeBranch {
         }
         if (null != mRightBranch) {
             mRightBranch.renderLeefs(aShapeRenderer);
+        }
+        if (null != mMiddleBranch) {
+            mMiddleBranch.renderLeefs(aShapeRenderer);
         }
     }
 

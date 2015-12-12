@@ -11,7 +11,7 @@ public interface Constants {
     int VIEW_SIZE_Y = 4;
 
     float SHRINKAGE_FACTOR = 0.25f; // :)
-    float SPEED = 0.01f;
+    float SPEED = 0.05f;
 
     Random sRandom = new Random();
 }
