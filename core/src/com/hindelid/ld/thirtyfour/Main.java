@@ -3,14 +3,16 @@ package com.hindelid.ld.thirtyfour;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.util.ArrayList;
-import java.util.List;
+import sun.reflect.generics.tree.Tree;
 
 public class Main extends ApplicationAdapter {
     private Viewport mViewPort;
@@ -18,18 +20,21 @@ public class Main extends ApplicationAdapter {
     private ShapeRenderer mShapeRenderer;
 
     private TreeBranch mRoot;
+    private Vector2 mCurrentViewCord;
 
 
     @Override
     public void create () {
         mShapeRenderer = new ShapeRenderer();
         mCamera = new OrthographicCamera();
-        mViewPort = new FitViewport(Constants.MAP_SIZE_X, Constants.MAP_SIZE_Y, mCamera);
-        mCamera.position.set(Constants.MAP_SIZE_X / 2, Constants.MAP_SIZE_Y / 2, 0);
-        mCamera.update();
+        mViewPort = new ExtendViewport(Constants.VIEW_SIZE_X, Constants.VIEW_SIZE_Y, mCamera);
+        mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
+        moveAndUpdateCamera();
 
-
-        mRoot = new TreeBranch(Constants.MAP_SIZE_X / 2f, 0, Constants.MAP_SIZE_X / 2f, 2);
+        mRoot = new TreeBranch(
+                new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
+                new Vector2(Constants.VIEW_SIZE_X / 2f, 0.2f),
+                true);
     }
 
     @Override
@@ -47,7 +52,11 @@ public class Main extends ApplicationAdapter {
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 
+        mShapeRenderer.setColor(Color.BROWN);
         mRoot.render(mShapeRenderer);
+
+        mShapeRenderer.setColor(Color.GREEN);
+        mRoot.renderLeefs(mShapeRenderer);
 
         mShapeRenderer.end();
 
@@ -57,8 +66,17 @@ public class Main extends ApplicationAdapter {
     }
 
     private void tick() {
+        moveAndUpdateCamera();
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             mRoot.split();
         }
+    }
+
+    private void moveAndUpdateCamera() {
+        TreeBranch.sGlobal.y += Constants.SPEED;
+        mCurrentViewCord.set(TreeBranch.sGlobal);
+
+        mCamera.position.set(mCurrentViewCord, 0);
+        mCamera.update();
     }
 }
