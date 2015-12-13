@@ -59,10 +59,10 @@ public class TreeBranch {
             mOrder++;
             if (mTheOneActive) {
                 mOrder = 1;
-                leftActive = Gdx.input.isKeyPressed(Input.Keys.A);
+                leftActive = Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A);
 //                leftActive = Constants.sRandom.nextBoolean();
                 if (!leftActive) {
-                    rightActive = Gdx.input.isKeyPressed(Input.Keys.D);
+                    rightActive = Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D);
                 }
             } else {
                 growLeft = Constants.sRandom.nextInt(mOrder) < 2;

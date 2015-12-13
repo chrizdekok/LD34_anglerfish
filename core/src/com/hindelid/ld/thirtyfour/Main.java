@@ -13,6 +13,11 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import sun.java2d.opengl.OGLContext;
 import sun.reflect.generics.tree.Tree;
 
 public class Main extends ApplicationAdapter {
@@ -21,11 +26,13 @@ public class Main extends ApplicationAdapter {
     private ShapeRenderer mShapeRenderer;
 
     private TreeBranch mRoot;
-    public TreeBranch mNextRoot;
+    public TreeBranch mNextRoot = null;
     private Vector2 mCurrentViewCord;
-    private Fish mFish;
+    private List<Fish> mFishes = new ArrayList<Fish>();
+    private List<Octopus> mOctopuses = new ArrayList<Octopus>();
 
-    private float mSpeed = Constants.SPEED;
+    private float mSpeed;
+    private float mTotalTime = 0f;
 
     @Override
     public void create () {
@@ -35,12 +42,7 @@ public class Main extends ApplicationAdapter {
         mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
         moveAndUpdateCamera();
 
-        mRoot = new TreeBranch(
-                new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
-                new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
-                true,
-                1);
-        mFish = new Fish(1f, 10f);
+        resetGame();
     }
 
     @Override
@@ -49,16 +51,25 @@ public class Main extends ApplicationAdapter {
 
     }
 
+    private void resetGame() {
+        mRoot = new TreeBranch(
+                new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
+                new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
+                true,
+                1);
+        mFishes.add(new Fish(0f, 0f));
+        mOctopuses.add(new Octopus(1f, 10f));
+        mCamera.zoom = 1.0f;
+        TreeBranch.sGlobal.setZero();
+        mSpeed = Constants.SPEED;
+    }
+
     @Override
     public void render () {
         long before = TimeUtils.nanoTime();
         tick();
-        if (TreeBranch.sGlobal.y < 255f) {
-            Gdx.gl.glClearColor(0, 0, TreeBranch.sGlobal.y / 255f, 1);
-        } else if (TreeBranch.sGlobal.y < 512f) {
-            Gdx.gl.glClearColor(0, (TreeBranch.sGlobal.y-256f) / 255f, 0, 1);
-        } else if (TreeBranch.sGlobal.y < 768f) {
-            Gdx.gl.glClearColor((TreeBranch.sGlobal.y-512f) / 255f, 0, 0, 1);
+        if (TreeBranch.sGlobal.y < 768f) {
+            Gdx.gl.glClearColor(0, 0, TreeBranch.sGlobal.y / 768f, 1);
         } else {
             System.out.println("You beat the game!");
             Gdx.app.exit();
@@ -75,7 +86,12 @@ public class Main extends ApplicationAdapter {
         mRoot.renderLeefs(mShapeRenderer);
 
         mShapeRenderer.setColor(Color.WHITE);
-        mFish.render(mShapeRenderer);
+        for (Fish f : mFishes) {
+            f.render(mShapeRenderer);
+        }
+        for (Octopus o : mOctopuses) {
+            o.render(mShapeRenderer);
+        }
         mShapeRenderer.end();
 
         long after = TimeUtils.nanoTime();
@@ -89,29 +105,104 @@ public class Main extends ApplicationAdapter {
     }
 
     private void tick() {
+        checkForNewRoot();
+        spawnNewStuff();
         moveAndUpdateCamera();
         if (TreeBranch.sNext) {
             TreeBranch.sNext = false;
             mRoot.split();
         }
-        if (mRoot.checkCollision(mFish.mBoundingBox)) {
-            System.out.println("Collision");
+        Iterator<Fish> fishIter = mFishes.iterator();
+        while (fishIter.hasNext()) {
+            if (mRoot.checkCollision(fishIter.next().mBoundingBox)) {
+                System.out.println("Collision");
+                fishIter.remove();
+                mSpeed *= 1.1f;
+            }
+        }
+        removeObsticles();
+    }
+
+    /**
+     * To avoid unnecessary CPU time when change the root.
+     */
+    private void checkForNewRoot() {
+        if ( mNextRoot != null && mNextRoot != mRoot) {
+            mRoot = mNextRoot;
+        }
+    }
+
+    private void spawnNewStuff() {
+        float ypos = TreeBranch.sGlobal.y;
+        if (  (ypos * 150f/800f + 30f) * Constants.sRandom.nextFloat() < 1f ) {
             spawnFishAbove();
-            mSpeed *=1.1f;
+        }
+        if ( Constants.sRandom.nextFloat() * 100f - (50f* ypos/ 1024f ) < 1f) {
+            spawnOctoAbove();
+        }
+    }
+
+    private void removeObsticles() {
+        Iterator<Fish> fishIter = mFishes.iterator();
+        while(fishIter.hasNext()) {
+            if (fishIter.next().mPos.y < TreeBranch.sGlobal.y - 10f) {
+                fishIter.remove();
+            }
+        }
+
+        Iterator<Octopus> octoIter = mOctopuses.iterator();
+        while(octoIter.hasNext()) {
+            if (octoIter.next().mPos.y < TreeBranch.sGlobal.y - 10f) {
+                octoIter.remove();
+            }
         }
     }
 
     private void spawnFishAbove() {
-        mFish.setPos(Constants.sRandom.nextFloat()*10f - 5f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 10f );
+        boolean collided = false;
+        Fish fish = new Fish(Constants.sRandom.nextFloat() * 10f - 5f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 10f);
+        for (Octopus o : mOctopuses) {
+            if (o.mBoundingBox.overlaps(fish.mBoundingBox)) {
+                collided = true;
+            }
+        }
+        for (Fish f : mFishes) {
+            if (f.mBoundingBox.overlaps(fish.mBoundingBox)) {
+                collided = true;
+            }
+        }
+        if (!collided) {
+            mFishes.add(fish);
+        }
+    }
+
+    private void spawnOctoAbove() {
+        boolean collided = false;
+        Octopus octopus = new Octopus(Constants.sRandom.nextFloat() * 20f - 10f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 15f);
+        for (Octopus o : mOctopuses) {
+            if (o.mBoundingBox.overlaps(octopus.mBoundingBox)) {
+                collided = true;
+            }
+        }
+        for (Fish f : mFishes) {
+            if (f.mBoundingBox.overlaps(octopus.mBoundingBox)) {
+                collided = true;
+            }
+        }
+        if (!collided) {
+            mOctopuses.add(octopus);
+        }
     }
 
     private void moveAndUpdateCamera() {
         TreeBranch.sGlobal.y += mSpeed;
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            mCamera.zoom *= 5f;
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.ALT_LEFT)) {
+        if (TreeBranch.sGlobal.y > 10f && mCamera.zoom < 3f) {
+            mCamera.zoom += 0.01f;
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ALT_LEFT)) {
             spawnFishAbove();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            resetGame();
         }
 
         mCurrentViewCord.set(TreeBranch.sGlobal);
