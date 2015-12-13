@@ -10,15 +10,11 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import sun.java2d.opengl.OGLContext;
-import sun.reflect.generics.tree.Tree;
 
 public class Main extends ApplicationAdapter {
     private Viewport mViewPort;
@@ -30,7 +26,7 @@ public class Main extends ApplicationAdapter {
     private Vector2 mCurrentViewCord;
     private List<Fish> mFishes = new ArrayList<Fish>();
     private List<Octopus> mOctopuses = new ArrayList<Octopus>();
-    private HealthMeter mHealthMeter;
+    private HUDDisplay mHUDDisplay;
 
     private float mAvgX[] = new float[10];
     private int mAvgXpos = 0;
@@ -39,10 +35,12 @@ public class Main extends ApplicationAdapter {
     private float mSpeed;
     private float mTotalTime = 0f;
 
+    private boolean mDead = false;
+
     @Override
     public void create() {
         mShapeRenderer = new ShapeRenderer();
-        mHealthMeter = new HealthMeter(mShapeRenderer);
+        mHUDDisplay = new HUDDisplay(mShapeRenderer);
         mCamera = new OrthographicCamera();
         mViewPort = new ExtendViewport(Constants.VIEW_SIZE_X, Constants.VIEW_SIZE_Y, mCamera);
         mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
@@ -52,9 +50,15 @@ public class Main extends ApplicationAdapter {
     }
 
     @Override
+    public void dispose() {
+        mHUDDisplay.dispose();
+        super.dispose();
+    }
+
+    @Override
     public void resize(int aWidth, int aHeight) {
         mViewPort.update(aWidth, aHeight);
-        mHealthMeter.resize(aWidth, aHeight);
+        mHUDDisplay.resize(aWidth, aHeight);
     }
 
     private void resetGame() {
@@ -70,12 +74,13 @@ public class Main extends ApplicationAdapter {
         mCamera.zoom = 1.0f;
         TreeBranch.sGlobal.setZero();
         mSpeed = Constants.SPEED;
-        mHealthMeter.reset();
-
+        mHUDDisplay.reset();
+        mDead = false;
     }
 
     @Override
     public void render() {
+
         long before = TimeUtils.nanoTime();
         tick();
         if (TreeBranch.sGlobal.y < 768f) {
@@ -105,7 +110,7 @@ public class Main extends ApplicationAdapter {
 
         mShapeRenderer.end();
 
-        mHealthMeter.render();
+        mHUDDisplay.render();
 
         long after = TimeUtils.nanoTime();
 
@@ -113,8 +118,9 @@ public class Main extends ApplicationAdapter {
 //        System.out.println("y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
 
         if (TreeBranch.sGlobal.y < 15f) {
-            mHealthMeter.renderStartScreen();
+            mHUDDisplay.renderStartScreen();
         }
+        mHUDDisplay.renderGameOver(789);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -122,7 +128,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void tick() {
-        boolean dead = false;
+
         checkForNewRoot();
         spawnNewStuff();
         moveAndUpdateCamera();
@@ -135,8 +141,7 @@ public class Main extends ApplicationAdapter {
             if (mRoot.checkCollision(fishIter.next().mBoundingBox)) {
                 System.out.println("Collision");
                 fishIter.remove();
-                mHealthMeter.incHP();
-                mSpeed *= 1.1f;
+                mHUDDisplay.incHP();
             }
         }
         Iterator<Octopus> octoIter = mOctopuses.iterator();
@@ -144,16 +149,23 @@ public class Main extends ApplicationAdapter {
             if (mRoot.checkCollision(octoIter.next().mBoundingBox)) {
                 octoIter.remove();
                 System.out.println("Collision");
-                if (mHealthMeter.decHP()) {
-                    dead = true;
+                if (mHUDDisplay.decHP()) {
+                    mDead = true;
                 }
             }
         }
 
         removeObsticles();
-        if (dead) {
-            resetGame();
+
+        if (mDead) {
+            if (mHUDDisplay.renderGameOver((int)TreeBranch.sGlobal.y)) {
+                resetGame();
+            }
+            mSpeed = 0;
+        } else {
+            mSpeed = Constants.SPEED + TreeBranch.sGlobal.y/2000f;
         }
+
     }
 
     /**
