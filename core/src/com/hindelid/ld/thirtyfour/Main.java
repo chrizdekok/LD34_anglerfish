@@ -30,13 +30,19 @@ public class Main extends ApplicationAdapter {
     private Vector2 mCurrentViewCord;
     private List<Fish> mFishes = new ArrayList<Fish>();
     private List<Octopus> mOctopuses = new ArrayList<Octopus>();
+    private HealthMeter mHealthMeter;
+
+    private float mAvgX[] = new float[10];
+    private int mAvgXpos = 0;
+
 
     private float mSpeed;
     private float mTotalTime = 0f;
 
     @Override
-    public void create () {
+    public void create() {
         mShapeRenderer = new ShapeRenderer();
+        mHealthMeter = new HealthMeter(mShapeRenderer);
         mCamera = new OrthographicCamera();
         mViewPort = new ExtendViewport(Constants.VIEW_SIZE_X, Constants.VIEW_SIZE_Y, mCamera);
         mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
@@ -48,24 +54,28 @@ public class Main extends ApplicationAdapter {
     @Override
     public void resize(int aWidth, int aHeight) {
         mViewPort.update(aWidth, aHeight);
-
+        mHealthMeter.resize(aWidth, aHeight);
     }
 
     private void resetGame() {
+        for(int i=0;i<10;i++) {
+            mAvgX[i] = 0;
+        }
         mRoot = new TreeBranch(
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0),
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
                 true,
                 1);
-        mFishes.add(new Fish(0f, 0f));
-        mOctopuses.add(new Octopus(1f, 10f));
+
         mCamera.zoom = 1.0f;
         TreeBranch.sGlobal.setZero();
         mSpeed = Constants.SPEED;
+        mHealthMeter.reset();
+
     }
 
     @Override
-    public void render () {
+    public void render() {
         long before = TimeUtils.nanoTime();
         tick();
         if (TreeBranch.sGlobal.y < 768f) {
@@ -92,12 +102,19 @@ public class Main extends ApplicationAdapter {
         for (Octopus o : mOctopuses) {
             o.render(mShapeRenderer);
         }
+
         mShapeRenderer.end();
+
+        mHealthMeter.render();
 
         long after = TimeUtils.nanoTime();
 
 
-        System.out.println("y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
+//        System.out.println("y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
+
+        if (TreeBranch.sGlobal.y < 15f) {
+            mHealthMeter.renderStartScreen();
+        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -105,6 +122,7 @@ public class Main extends ApplicationAdapter {
     }
 
     private void tick() {
+        boolean dead = false;
         checkForNewRoot();
         spawnNewStuff();
         moveAndUpdateCamera();
@@ -117,41 +135,59 @@ public class Main extends ApplicationAdapter {
             if (mRoot.checkCollision(fishIter.next().mBoundingBox)) {
                 System.out.println("Collision");
                 fishIter.remove();
+                mHealthMeter.incHP();
                 mSpeed *= 1.1f;
             }
         }
+        Iterator<Octopus> octoIter = mOctopuses.iterator();
+        while (octoIter.hasNext()) {
+            if (mRoot.checkCollision(octoIter.next().mBoundingBox)) {
+                octoIter.remove();
+                System.out.println("Collision");
+                if (mHealthMeter.decHP()) {
+                    dead = true;
+                }
+            }
+        }
+
         removeObsticles();
+        if (dead) {
+            resetGame();
+        }
     }
 
     /**
      * To avoid unnecessary CPU time when change the root.
      */
     private void checkForNewRoot() {
-        if ( mNextRoot != null && mNextRoot != mRoot) {
+        if (mNextRoot != null && mNextRoot != mRoot) {
             mRoot = mNextRoot;
         }
     }
 
     private void spawnNewStuff() {
+        if (TreeBranch.sGlobal.y < 10f) { //Don't spawn anything in the beginning.
+            return;
+        }
         float ypos = TreeBranch.sGlobal.y;
-        if (  (ypos * 150f/800f + 30f) * Constants.sRandom.nextFloat() < 1f ) {
+        if ((ypos * 150f / 800f + 30f) * Constants.sRandom.nextFloat() < 1f) {
             spawnFishAbove();
         }
-        if ( Constants.sRandom.nextFloat() * 100f - (50f* ypos/ 1024f ) < 1f) {
+        if (Constants.sRandom.nextFloat() * 100f - (50f * ypos / 1024f) < 1f) {
             spawnOctoAbove();
         }
     }
 
     private void removeObsticles() {
         Iterator<Fish> fishIter = mFishes.iterator();
-        while(fishIter.hasNext()) {
+        while (fishIter.hasNext()) {
             if (fishIter.next().mPos.y < TreeBranch.sGlobal.y - 10f) {
                 fishIter.remove();
             }
         }
 
         Iterator<Octopus> octoIter = mOctopuses.iterator();
-        while(octoIter.hasNext()) {
+        while (octoIter.hasNext()) {
             if (octoIter.next().mPos.y < TreeBranch.sGlobal.y - 10f) {
                 octoIter.remove();
             }
@@ -204,9 +240,19 @@ public class Main extends ApplicationAdapter {
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
             resetGame();
         }
-
-        mCurrentViewCord.set(TreeBranch.sGlobal);
+        mCurrentViewCord.set(getAvgOfLast10X(),TreeBranch.sGlobal.y);
         mCamera.position.set(mCurrentViewCord, 0);
         mCamera.update();
+    }
+
+    private float getAvgOfLast10X() {
+        mAvgX[mAvgXpos++] = TreeBranch.sGlobal.x;
+        mAvgXpos %= 10;
+        float avg = 0;
+        for (int i=0; i< 10; i++) {
+            avg += mAvgX[i];
+        }
+        avg /= 10f;
+        return avg;
     }
 }
