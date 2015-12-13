@@ -1,6 +1,7 @@
 package com.hindelid.ld.thirtyfour;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -26,13 +27,14 @@ public class HUDDisplay {
     private BitmapFont mFont;
     private Batch mBatch;
 
-    private float[] leftArrow = {30,20, 30,30, 20,30, 20,40, 10,25f, 20,10, 20,20};
-    private float[] rightArrow = {70,20, 70,30, 80,30, 80,40, 90,25f, 80,10, 80,20};
+    private float[] leftArrow = {120,80, 120,120, 80,120, 80,160, 40,100f, 80,40, 80,80};
+    private float[] rightArrow = {280,80, 280,120, 320,120, 320,160, 360,100f, 320,40, 320,80};
 
     private int mHealth;
-    private int mCounter = 100;
+    private int mCounter;
+    private int mHighScore = 0;
 
-    public HUDDisplay(ShapeRenderer aShapeRenderer) {
+    public HUDDisplay() {
         mShapeRenderer = new ShapeRenderer();
         mBatch = new SpriteBatch();
         mFont = new BitmapFont();
@@ -41,15 +43,15 @@ public class HUDDisplay {
         //mFont.getData().setScale(0.1f);
 
         mHUDCamera = new OrthographicCamera();
-        mHUDCamera.position.set(100/2, 100/2, 0);
+        mHUDCamera.position.set(400/2, 400/2, 0);
         mHUDCamera.update();
-        mHUDViewport = new ExtendViewport(100, 100, mHUDCamera);
+        mHUDViewport = new ExtendViewport(400, 400, mHUDCamera);
         reset();
     }
 
     public void reset() {
         mHealth = 1;
-        mCounter = 100;
+        mCounter = 200;
     }
 
     public void resize(int aWidth, int aHeight) {
@@ -81,43 +83,51 @@ public class HUDDisplay {
 
     }
 
-    public void render() {
+    public void render(int aPoints) {
         mHUDCamera.update();
         mBatch.setProjectionMatrix(mHUDCamera.combined);
 
         mBatch.begin();
-        //mFont.getData().setScale(0.5f);
-        mFont.draw(mBatch, "high score:" + 123, 75f, 15f);
-        mFont.draw(mBatch, "score:" + 44, 75f, 5f);
+        mFont.getData().setScale(1f);
+        mFont.draw(mBatch, "high score:" + mHighScore, 330f, 40f);
+        mFont.draw(mBatch, "score:" + aPoints, 330f, 20f);
         mBatch.end();
 
         mShapeRenderer.setProjectionMatrix(mHUDCamera.combined);
 
         mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         mShapeRenderer.setColor(Color.RED);
-        mShapeRenderer.rect(0f, 5f, 50f, 5f);
+        mShapeRenderer.rect(0f, 20f, 200f, 20f);
         mShapeRenderer.setColor(Color.GREEN);
-        mShapeRenderer.rect(0f, 5f, mHealth * 10f, 5f);
+        mShapeRenderer.rect(0f, 20f, mHealth * 40f, 20f);
         mShapeRenderer.end();
 
     }
 
     public boolean renderGameOver(int aPoints) {
+        if (aPoints > mHighScore) {
+            mHighScore = aPoints;
+        }
         mHUDCamera.update();
         mBatch.setProjectionMatrix(mHUDCamera.combined);
-
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) {
+            mCounter = 49;
+        }
+        if (mCounter < 50) {
+            mCounter--;
+        }
         mBatch.begin();
         if (mCounter >= 0) {
-            mFont.getData().setScale(1f + 5f / (mCounter + 1f));
+            mFont.getData().setScale(4f + 10f / (mCounter + 1f));
         } else {
-            mFont.getData().setScale(1f);
+            mFont.getData().setScale(4f);
         }
-        mFont.draw(mBatch, "game over", 15f, 60f);
-        mFont.getData().setScale(0.5f);
-        mFont.draw(mBatch, "points:" + aPoints, 30f, 40f);
+        mFont.draw(mBatch, "game over", 60f, 240f);
+        mFont.getData().setScale(2f);
+        mFont.draw(mBatch, "points:" + aPoints, 120f, 160f);
         mBatch.end();
 
-        return mCounter-- <= 0;
+        return mCounter <= 0;
     }
 
     public void dispose() {

@@ -32,6 +32,8 @@ public class TreeBranch {
     private boolean mActive;
     private boolean mTheOneActive;
 
+    private boolean mFirstRenderer = true;
+
 
     public TreeBranch(Vector2 aStart, Vector2 aEnd, boolean aActive, int aOrder) {
         mStart = aStart;
@@ -108,8 +110,11 @@ public class TreeBranch {
             sGlobal.x = mStart.x;// + (mEnd.x - mStart.x) * (sGlobal.y - mStart.y) / (mEnd.y - mStart.y);
             if (sGlobal.y > mEnd.y) {
                 sNext = true;
-//                split();
+                if(mFirstRenderer) { // To keep up if the fps is lower than number of BranchTress grow per second.
+                    split();
+                }
             }
+            mFirstRenderer = false;
         }
         if (mActive) {
 

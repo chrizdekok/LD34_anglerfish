@@ -33,14 +33,14 @@ public class Main extends ApplicationAdapter {
 
 
     private float mSpeed;
-    private float mTotalTime = 0f;
+    private float mTotalPoints = 0f;
 
     private boolean mDead = false;
 
     @Override
     public void create() {
         mShapeRenderer = new ShapeRenderer();
-        mHUDDisplay = new HUDDisplay(mShapeRenderer);
+        mHUDDisplay = new HUDDisplay();
         mCamera = new OrthographicCamera();
         mViewPort = new ExtendViewport(Constants.VIEW_SIZE_X, Constants.VIEW_SIZE_Y, mCamera);
         mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
@@ -76,6 +76,7 @@ public class Main extends ApplicationAdapter {
         mSpeed = Constants.SPEED;
         mHUDDisplay.reset();
         mDead = false;
+        mTotalPoints = 0;
     }
 
     @Override
@@ -110,18 +111,18 @@ public class Main extends ApplicationAdapter {
 
         mShapeRenderer.end();
 
-        mHUDDisplay.render();
+        mHUDDisplay.render((int)mTotalPoints);
 
         long after = TimeUtils.nanoTime();
 
 
-//        System.out.println("y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
+        System.out.println("speed:" + mSpeed + " Time:" + (after - before) / 1000); //TODO remove
 
         if (TreeBranch.sGlobal.y < 15f) {
             mHUDDisplay.renderStartScreen();
         }
         if (mDead) {
-            if (mHUDDisplay.renderGameOver((int) TreeBranch.sGlobal.y)) {
+            if (mHUDDisplay.renderGameOver((int)mTotalPoints)) {
                 resetGame();
             }
         }
@@ -144,6 +145,7 @@ public class Main extends ApplicationAdapter {
         while (fishIter.hasNext()) {
             if (mRoot.checkCollision(fishIter.next().mBoundingBox)) {
                 System.out.println("Collision");
+                mTotalPoints += 10;
                 fishIter.remove();
                 mHUDDisplay.incHP();
             }
@@ -153,6 +155,7 @@ public class Main extends ApplicationAdapter {
             if (mRoot.checkCollision(octoIter.next().mBoundingBox)) {
                 octoIter.remove();
                 System.out.println("Collision");
+                mTotalPoints -= 10;
                 if (mHUDDisplay.decHP()) {
                     mDead = true;
                 }
@@ -245,13 +248,9 @@ public class Main extends ApplicationAdapter {
 
     private void moveAndUpdateCamera() {
         TreeBranch.sGlobal.y += mSpeed;
+        mTotalPoints += mSpeed;
         if (TreeBranch.sGlobal.y > 10f && mCamera.zoom < 3f) {
             mCamera.zoom += 0.01f;
-        }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ALT_LEFT)) {
-            spawnFishAbove();
-        } else if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            resetGame();
         }
         mCurrentViewCord.set(getAvgOfLast10X(),TreeBranch.sGlobal.y);
         mCamera.position.set(mCurrentViewCord, 0);
