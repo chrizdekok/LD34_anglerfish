@@ -3,6 +3,7 @@ package com.hindelid.ld.thirtyfour;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,7 +23,8 @@ public class Main extends ApplicationAdapter {
     private ShapeRenderer mShapeRenderer;
 
     private TreeBranch mRoot;
-    public TreeBranch mNextRoot = null;
+    public static TreeBranch mNextRoot = null;
+
     private Vector2 mCurrentViewCord;
     private List<Fish> mFishes = new ArrayList<Fish>();
     private List<Octopus> mOctopuses = new ArrayList<Octopus>();
@@ -70,7 +72,7 @@ public class Main extends ApplicationAdapter {
                 new Vector2(Constants.VIEW_SIZE_X / 2f, 0.5f),
                 true,
                 1);
-
+        mNextRoot = null;
         mCamera.zoom = 1.0f;
         TreeBranch.sGlobal.setZero();
         mSpeed = Constants.SPEED;
@@ -84,11 +86,12 @@ public class Main extends ApplicationAdapter {
 
         long before = TimeUtils.nanoTime();
         tick();
-        if (TreeBranch.sGlobal.y < 768f) {
-            Gdx.gl.glClearColor(0, 0, TreeBranch.sGlobal.y / 768f, 1);
+        if (TreeBranch.sGlobal.y < 1000f) {
+            Gdx.gl.glClearColor(0, 0, TreeBranch.sGlobal.y / 1000f, 1);
+        } else if (TreeBranch.sGlobal.y < 2000f) {
+            Gdx.gl.glClearColor((TreeBranch.sGlobal.y-1000f) / 1000f, 0, 1, 1);
         } else {
-            System.out.println("You beat the game!");
-            Gdx.app.exit();
+            Gdx.gl.glClearColor((3000f - TreeBranch.sGlobal.y) / 1000f, 0, (3000f - TreeBranch.sGlobal.y) / 1000f, 1);
         }
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -116,7 +119,7 @@ public class Main extends ApplicationAdapter {
         long after = TimeUtils.nanoTime();
 
 
-        System.out.println("speed:" + mSpeed + " Time:" + (after - before) / 1000); //TODO remove
+        System.out.println("speed:" + mSpeed + " y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
 
         if (TreeBranch.sGlobal.y < 15f) {
             mHUDDisplay.renderStartScreen();
@@ -212,7 +215,7 @@ public class Main extends ApplicationAdapter {
 
     private void spawnFishAbove() {
         boolean collided = false;
-        Fish fish = new Fish(Constants.sRandom.nextFloat() * 10f - 5f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 10f);
+        Fish fish = new Fish(Constants.sRandom.nextFloat() * 30f - 15f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 10f);
         for (Octopus o : mOctopuses) {
             if (o.mBoundingBox.overlaps(fish.mBoundingBox)) {
                 collided = true;
@@ -230,7 +233,7 @@ public class Main extends ApplicationAdapter {
 
     private void spawnOctoAbove() {
         boolean collided = false;
-        Octopus octopus = new Octopus(Constants.sRandom.nextFloat() * 20f - 10f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 15f);
+        Octopus octopus = new Octopus(Constants.sRandom.nextFloat() * 30f - 15f + TreeBranch.sGlobal.x, TreeBranch.sGlobal.y + 15f);
         for (Octopus o : mOctopuses) {
             if (o.mBoundingBox.overlaps(octopus.mBoundingBox)) {
                 collided = true;
@@ -249,7 +252,9 @@ public class Main extends ApplicationAdapter {
     private void moveAndUpdateCamera() {
         TreeBranch.sGlobal.y += mSpeed;
         mTotalPoints += mSpeed;
-        if (TreeBranch.sGlobal.y > 10f && mCamera.zoom < 3f) {
+        if ((TreeBranch.sGlobal.y > 10f && mCamera.zoom < 3f) ||
+                (TreeBranch.sGlobal.y > 200f && mCamera.zoom < 5f)||
+                (TreeBranch.sGlobal.y > 400f && mCamera.zoom < 5f)) {
             mCamera.zoom += 0.01f;
         }
         mCurrentViewCord.set(getAvgOfLast10X(),TreeBranch.sGlobal.y);

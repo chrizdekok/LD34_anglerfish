@@ -130,7 +130,11 @@ public class TreeBranch {
             } else {
                 aShapeRenderer.line(mStart, mEnd);
             }
+            if (mEnd.y + 10f < sGlobal.y) {
+                Main.mNextRoot = this;
+            }
             aShapeRenderer.setColor(Color.BROWN);
+
         } else {
             aShapeRenderer.line(mStart, mEnd);
         }
@@ -145,6 +149,7 @@ public class TreeBranch {
         if (null != mMiddleBranch) {
             mMiddleBranch.render(aShapeRenderer);
         }
+
     }
 
     public void renderLeefs(ShapeRenderer aShapeRenderer) {
