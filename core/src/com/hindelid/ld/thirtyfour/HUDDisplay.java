@@ -77,6 +77,14 @@ public class HUDDisplay {
         mShapeRenderer.polygon(rightArrow);
         mShapeRenderer.end();
 
+        mBatch.begin();
+        mFont.setColor(Color.RED);
+        mFont.getData().setScale(4f);
+        mFont.draw(mBatch, "AnglerFish", 70f, 300f);
+        mFont.getData().setScale(1f);
+        mFont.draw(mBatch, "by Christoffer Hindelid", 70f, 240f);
+        mBatch.end();
+
     }
 
     public void render(int aPoints) {
