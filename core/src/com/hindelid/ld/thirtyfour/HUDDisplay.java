@@ -9,12 +9,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-import java.awt.Font;
 
 /**
  * Created by chris on 13 Dec 2015.
@@ -93,14 +90,14 @@ public class HUDDisplay {
         mBatch.end();
 
         mShapeRenderer.setProjectionMatrix(mHUDCamera.combined);
-
-        mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        mShapeRenderer.setColor(Color.RED);
-        mShapeRenderer.rect(0f, 20f, 200f, 20f);
-        mShapeRenderer.setColor(Color.GREEN);
-        mShapeRenderer.rect(0f, 20f, mHealth * 40f, 20f);
-        mShapeRenderer.end();
-
+        if (mHealth>0) {
+            mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            mShapeRenderer.setColor(Color.RED);
+            mShapeRenderer.rect(0f, 20f, 200f, 20f);
+            mShapeRenderer.setColor(Color.GREEN);
+            mShapeRenderer.rect(0f, 20f, mHealth * 40f, 20f);
+            mShapeRenderer.end();
+        }
     }
 
     public boolean renderGameOver(int aPoints) {
@@ -115,6 +112,11 @@ public class HUDDisplay {
         if (mCounter < 50) {
             mCounter--;
         }
+        mShapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        mShapeRenderer.setColor(Color.BLACK);
+        mShapeRenderer.rect(-2f, 0f, 130f, 40f);
+        mShapeRenderer.end();
+
         mBatch.begin();
         if (mCounter >= 0) {
             mFont.getData().setScale(4f + 10f / (mCounter + 1f));
@@ -124,6 +126,11 @@ public class HUDDisplay {
         mFont.draw(mBatch, "game over", 60f, 240f);
         mFont.getData().setScale(2f);
         mFont.draw(mBatch, "points:" + aPoints, 120f, 160f);
+        mFont.getData().setScale(1f);
+        mFont.setColor(Color.OLIVE);
+        mFont.draw(mBatch, "made by chrizdekok", 0f, 40f);
+        mFont.draw(mBatch, "www.hindelid.com", 0f, 20f);
+        mFont.setColor(Color.RED);
         mBatch.end();
 
         return mCounter <= 0;
