@@ -120,7 +120,11 @@ public class Main extends ApplicationAdapter {
         if (TreeBranch.sGlobal.y < 15f) {
             mHUDDisplay.renderStartScreen();
         }
-        mHUDDisplay.renderGameOver(789);
+        if (mDead) {
+            if (mHUDDisplay.renderGameOver((int) TreeBranch.sGlobal.y)) {
+                resetGame();
+            }
+        }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             Gdx.app.exit();
@@ -158,9 +162,6 @@ public class Main extends ApplicationAdapter {
         removeObsticles();
 
         if (mDead) {
-            if (mHUDDisplay.renderGameOver((int)TreeBranch.sGlobal.y)) {
-                resetGame();
-            }
             mSpeed = 0;
         } else {
             mSpeed = Constants.SPEED + TreeBranch.sGlobal.y/2000f;
