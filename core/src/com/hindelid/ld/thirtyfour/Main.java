@@ -33,6 +33,10 @@ public class Main extends ApplicationAdapter {
     private float mAvgX[] = new float[10];
     private int mAvgXpos = 0;
 
+    private static Sound mStartSound;
+    private static Sound mDeadSound;
+    private static Sound mOctoSound;
+    private static Sound mFishSound;
 
     private float mSpeed;
     private float mTotalPoints = 0f;
@@ -47,13 +51,20 @@ public class Main extends ApplicationAdapter {
         mViewPort = new ExtendViewport(Constants.VIEW_SIZE_X, Constants.VIEW_SIZE_Y, mCamera);
         mCurrentViewCord = new Vector2(Constants.VIEW_SIZE_X / 2, Constants.VIEW_SIZE_Y / 2);
         moveAndUpdateCamera();
-
+        mStartSound = Gdx.audio.newSound(Gdx.files.internal("start.wav"));
+        mDeadSound = Gdx.audio.newSound(Gdx.files.internal("dead.wav"));
+        mOctoSound = Gdx.audio.newSound(Gdx.files.internal("octo.wav"));
+        mFishSound = Gdx.audio.newSound(Gdx.files.internal("fish.wav"));
         resetGame();
     }
 
     @Override
     public void dispose() {
         mHUDDisplay.dispose();
+        mStartSound.dispose();
+        mDeadSound.dispose();
+        mOctoSound.dispose();
+        mFishSound.dispose();
         super.dispose();
     }
 
@@ -79,6 +90,8 @@ public class Main extends ApplicationAdapter {
         mHUDDisplay.reset();
         mDead = false;
         mTotalPoints = 0;
+
+        mStartSound.play();
     }
 
     @Override
@@ -147,8 +160,8 @@ public class Main extends ApplicationAdapter {
         Iterator<Fish> fishIter = mFishes.iterator();
         while (fishIter.hasNext()) {
             if (mRoot.checkCollision(fishIter.next().mBoundingBox)) {
-                System.out.println("Collision");
                 mTotalPoints += 10;
+                mFishSound.play();
                 fishIter.remove();
                 mHUDDisplay.incHP();
             }
@@ -157,10 +170,13 @@ public class Main extends ApplicationAdapter {
         while (octoIter.hasNext()) {
             if (mRoot.checkCollision(octoIter.next().mBoundingBox)) {
                 octoIter.remove();
-                System.out.println("Collision");
                 mTotalPoints -= 10;
+
                 if (mHUDDisplay.decHP()) {
                     mDead = true;
+                    mDeadSound.play();
+                } else {
+                    mOctoSound.play();
                 }
             }
         }
