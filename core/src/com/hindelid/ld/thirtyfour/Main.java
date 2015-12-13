@@ -132,7 +132,7 @@ public class Main extends ApplicationAdapter {
         long after = TimeUtils.nanoTime();
 
 
-        System.out.println("speed:" + mSpeed + " y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
+        //System.out.println("speed:" + mSpeed + " y:" + TreeBranch.sGlobal.y + " Time:" + (after - before) / 1000); //TODO remove
 
         if (TreeBranch.sGlobal.y < 15f) {
             mHUDDisplay.renderStartScreen();

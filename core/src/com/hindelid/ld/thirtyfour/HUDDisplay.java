@@ -40,7 +40,6 @@ public class HUDDisplay {
         mFont = new BitmapFont();
 
         mFont.setColor(Color.RED);
-        //mFont.getData().setScale(0.1f);
 
         mHUDCamera = new OrthographicCamera();
         mHUDCamera.position.set(400/2, 400/2, 0);
@@ -50,7 +49,7 @@ public class HUDDisplay {
     }
 
     public void reset() {
-        mHealth = 1;
+        mHealth = 3;
         mCounter = 200;
     }
 

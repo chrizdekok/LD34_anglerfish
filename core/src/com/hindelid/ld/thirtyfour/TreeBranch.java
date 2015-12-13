@@ -52,8 +52,6 @@ public class TreeBranch {
             double leftAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
             double rightAngle = (Constants.sRandom.nextDouble() + 0.5d) * Math.PI / 4d;
             double middleAngle = (Constants.sRandom.nextDouble() - 0.5d) * Math.PI / 4d;
-            float leftXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
-            float rightXLength = (mEnd.y - mStart.y) * (0.5f + Constants.sRandom.nextFloat() / 2f);
             boolean leftActive = false;
             boolean rightActive = false;
             boolean growLeft = true;
@@ -62,7 +60,7 @@ public class TreeBranch {
             if (mTheOneActive) {
                 mOrder = 1;
                 leftActive = Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A);
-//                leftActive = Constants.sRandom.nextBoolean();
+
                 if (!leftActive) {
                     rightActive = Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D);
                 }
